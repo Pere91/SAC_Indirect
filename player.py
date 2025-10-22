@@ -1,4 +1,5 @@
 import socket
+import os
 
 class Board:
     def __init__(self, rows, cols):
@@ -10,7 +11,7 @@ class Board:
         return x >= self.__cols or y >= self.__rows
     
     def __str__(self):
-        return '\n'.join('·'.join(row) for row in self.__board)
+        return '\n'.join('|'.join(row) for row in self.__board)
     
     @property
     def rows(self):
@@ -32,10 +33,19 @@ class Board:
     
 
 
-class Agent:
-    def __init__(self, piece, board):
-        self.__piece = piece
+class Player:
+
+    def __init__(self, board):
         self.__board = board
+        self.__name = os.getenv("PLAYER_NAME")
+        self.__players = os.getenv("PLAYERS_HOSTS")
+        self.__piece = self.__assign_piece()
+
+    def __assign_piece(self):
+        if self.__name == "player1":
+            return 'O'
+        else:
+            return 'X'
 
     def set_piece(self, x, y):
         try:
@@ -48,14 +58,9 @@ class Agent:
 
 
 def main():
-    agent = Agent('O', Board(3, 3))
-    
-    while True:
-        x = int(input("Row: "))
-        y = int(input("Col: "))
+    player = Player(Board(3, 3))
 
-        agent.set_piece(x, y)
-        agent.show_board()
+
 
 if __name__ == "__main__":
     main()

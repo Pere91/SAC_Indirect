@@ -1,0 +1,27 @@
+
+services:
+
+  player1:
+    build: .
+    container_name: player1
+    ports:
+      - 5001:5000
+    environment:
+      - PLAYER_PORT=5000
+      - PLAYER_NAME=player1
+      - PLAYER_HOSTS=player1:5000,player2:5000
+
+  player2:
+    build: .
+    container_name: player2
+    ports:
+      - 5002:5000
+    environment:
+      - PLAYER_PORT=5000
+      - PLAYER_NAME=player2
+      - PLAYER_HOSTS=player1:5000,player2:5000
+
+
+networks:
+  default:
+    name: players-network
