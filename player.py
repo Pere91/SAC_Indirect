@@ -1,5 +1,6 @@
 import socket
 import os
+import time
 
 class Board:
     def __init__(self, rows, cols):
@@ -38,14 +39,19 @@ class Player:
     def __init__(self, board):
         self.__board = board
         self.__name = os.getenv("PLAYER_NAME")
-        self.__players = os.getenv("PLAYERS_HOSTS")
         self.__piece = self.__assign_piece()
+        self.__foe_addr = self.__get_foe_addr()
 
     def __assign_piece(self):
         if self.__name == "player1":
             return 'O'
         else:
             return 'X'
+        
+    def __get_foe_addr(self):
+        players = os.getenv("PLAYER_HOSTS").split(',')
+        return [p for p in players if not p.startswith(self.__name)]
+
 
     def set_piece(self, x, y):
         try:
@@ -59,7 +65,6 @@ class Player:
 
 def main():
     player = Player(Board(3, 3))
-
 
 
 if __name__ == "__main__":
