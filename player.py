@@ -8,13 +8,30 @@ class Board:
         self.__rows = rows
         self.__cols = cols
         self.__board = [[' ' for i in range(0, self.__cols)] for i in range(0, self.__rows)]
-
-    def __out(self, x, y):
-        return x >= self.__cols or y >= self.__rows
     
     def __str__(self):
         return '\n'.join('|'.join(row) for row in self.__board)
     
+    def __out(self, x, y):
+        return x >= self.__cols or y >= self.__rows
+    
+    def __empty(self, x, y):
+        if self.__out(x, y):
+            raise IndexError(f"Position [{x},{y}]: OUT OF BOARD")
+        return self.__board[x][y] == ' '
+    
+    def __check_horizontal_vertical(self):
+        for i in range(0, self.__rows):
+            # Horizontal check
+            if self.__board[i][0] != ' ' and all(x == self.__board[i][0] for x in self.__board[i]):
+                return True
+            
+            # Vertical check
+            col = [row[i] for row in self.__board]
+            if col[0] != ' ' and all(x == col[0] for x in col):
+               return True
+        return False
+            
     @property
     def rows(self):
         return self.__rows
@@ -22,16 +39,14 @@ class Board:
     @property
     def cols(self):
         return self.__cols
-
-    def empty(self, x, y):
-        if self.__out(x, y):
-            raise IndexError(f"Position [{x},{y}]: OUT OF BOARD")
-        return self.__board[x][y] == ' '
     
     def place(self, x, y, piece):
-        if not self.empty(x, y):
+        if not self.__empty(x, y):
             raise IndexError(f"Position [{x},{y}]: OCCUPIED")
         self.__board[x][y] = piece
+
+    def check_end(self):
+        return self.__check_horizontal_vertical()
     
 
 
@@ -79,6 +94,9 @@ class Player:
     def show_board(self):
         print(self.__board)
 
+    def check_end(self):
+        return self.__board.check_end()
+
     def publish(self, box):
         self_piece = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         x, y = box.split(',')
@@ -92,14 +110,19 @@ class Player:
 
 def main():
     player = Player(Board(3, 3))
-
     player.subscribe()
 
     while True:
         if player.turn:
             print("\n")
             player.show_board()
+
+            if player.check_end():
+                print("YOU LOSE...")
+                break
+
             print("\nPlace your piece: ")
+
             while True:
                 try:
                     box = input()
@@ -108,6 +131,12 @@ def main():
                 except IndexError as e:
                     print(e)
                     print("Try again: ")
+
+            if player.check_end():
+                print("\n")
+                player.show_board()
+                print("YOU WIN!")
+                break
 
 
 if __name__ == "__main__":
