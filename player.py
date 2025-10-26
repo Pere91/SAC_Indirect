@@ -62,17 +62,19 @@ class Player:
         foe_piece.bind(("0.0.0.0", self.__port))
 
         while True:
-            pos, _ = foe_piece.recvfrom(1024)
-            print(f"Foe piece at {pos.decode('utf-8')}")
+            data, _ = foe_piece.recvfrom(1024)
+            piece, coord = data.decode('utf-8').split(':')
+            x, y = coord.split(',')
+            self.set_piece(int(x), int(y), piece)
             self.__turn = True
 
     @property
     def turn(self):
         return self.__turn
 
-    def set_piece(self, x, y):
+    def set_piece(self, x, y, piece):
         try:
-            self.__board.place(x, y, self.__piece)
+            self.__board.place(x, y, piece)
         except IndexError as e:
             print(e)
 
@@ -81,7 +83,10 @@ class Player:
 
     def publish(self, box):
         self_piece = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self_piece.sendto(box.encode('utf-8'), self.__foe_addr)
+        x, y = box.split(',')
+        self.set_piece(int(x), int(y), self.__piece)
+        data = self.__piece + ":" + box
+        self_piece.sendto(data.encode('utf-8'), self.__foe_addr)
         self.__turn = False
 
     def subscribe(self):
@@ -94,7 +99,8 @@ def main():
 
     while True:
         if player.turn:
-            box = input("Place your piece: ")
+            player.show_board()
+            box = input("\nPlace your piece: ")
             player.publish(box)
 
 
