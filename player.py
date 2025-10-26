@@ -73,10 +73,8 @@ class Player:
         return self.__turn
 
     def set_piece(self, x, y, piece):
-        try:
-            self.__board.place(x, y, piece)
-        except IndexError as e:
-            print(e)
+        self.__board.place(x, y, piece)
+
 
     def show_board(self):
         print(self.__board)
@@ -99,9 +97,17 @@ def main():
 
     while True:
         if player.turn:
+            print("\n")
             player.show_board()
-            box = input("\nPlace your piece: ")
-            player.publish(box)
+            print("\nPlace your piece: ")
+            while True:
+                try:
+                    box = input()
+                    player.publish(box)
+                    break
+                except IndexError as e:
+                    print(e)
+                    print("Try again: ")
 
 
 if __name__ == "__main__":
