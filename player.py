@@ -12,7 +12,13 @@ class Board:
         self.__board = [[' ' for i in range(0, self.__cols)] for i in range(0, self.__rows)]
     
     def __str__(self):
-        return '\n'.join('|'.join(row) for row in self.__board)
+        s = ""
+        for row in range(self.__rows):
+            s += "\n-------------\n| "
+            for col in range(self.__cols):
+                s += self.__board[row][col] + " | "
+        s += "\n-------------\n"
+        return s
     
     def __out(self, x, y):
         return x >= self.__cols or y >= self.__rows
@@ -69,7 +75,7 @@ class Board:
         return self.__check_horizontal_vertical() or self.__check_main_diagonal() \
             or self.__check_anti_diagonal()
     
-    
+
 class Player:
 
     def __init__(self, board):
@@ -134,12 +140,10 @@ def main():
 
     while True:
         if player.turn:
-            print("\n")
             player.show_board()
 
             try:
                 if player.check_end():
-                    print("\n")
                     print("YOU LOSE...")
                     break
             except StaleMateException as e:
@@ -159,7 +163,6 @@ def main():
 
             try:
                 if player.check_end():
-                    print("\n")
                     player.show_board()
                     print("YOU WIN!")
                     break
