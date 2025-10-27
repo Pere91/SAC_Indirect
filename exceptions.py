@@ -1,0 +1,2 @@
+class StaleMateException(Exception):
+    pass
