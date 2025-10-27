@@ -31,6 +31,21 @@ class Board:
             if col[0] != ' ' and all(x == col[0] for x in col):
                return True
         return False
+    
+    def __check_main_diagonal(self):
+        return self.__board[0][0] != ' ' and all(self.__board[0][0] == self.__board[i][i] for i in range (1, self.__rows))
+    
+    def __check_anti_diagonal(self):
+        if self.__empty(0, self.__cols - 1):
+            return False
+        
+        piece = self.__board[0][self.__cols - 1]
+        for i in range(self.__rows):
+            for j in range(self.__cols - 1, 0, -1):
+                if self.__board[i][j] != piece:
+                    return False
+        return True
+
             
     @property
     def rows(self):
@@ -46,7 +61,8 @@ class Board:
         self.__board[x][y] = piece
 
     def check_end(self):
-        return self.__check_horizontal_vertical()
+        return self.__check_horizontal_vertical() or self.__check_main_diagonal() \
+            or self.__check_anti_diagonal()
     
 
 
