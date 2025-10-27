@@ -1,7 +1,9 @@
 import socket
 import os
 import threading
-import time
+
+class StaleMateException(Exception):
+    pass
 
 class Board:
     def __init__(self, rows, cols):
@@ -23,12 +25,12 @@ class Board:
     def __check_horizontal_vertical(self):
         for i in range(0, self.__rows):
             # Horizontal check
-            if self.__board[i][0] != ' ' and all(x == self.__board[i][0] for x in self.__board[i]):
+            if not self.__empty(i, 0) and all(x == self.__board[i][0] for x in self.__board[i]):
                 return True
             
             # Vertical check
             col = [row[i] for row in self.__board]
-            if col[0] != ' ' and all(x == col[0] for x in col):
+            if not self.__empty(0, i) and all(x == col[0] for x in col):
                return True
         return False
     
@@ -46,7 +48,6 @@ class Board:
                 return False
             j -= 1
         return True
-
             
     @property
     def rows(self):
@@ -62,11 +63,13 @@ class Board:
         self.__board[x][y] = piece
 
     def check_end(self):
+        if all(not self.__empty(i, j) for i in range(0, self.__rows) for j in range(self.__cols)):
+            raise StaleMateException("STALEMATE: END OF GAME")
+
         return self.__check_horizontal_vertical() or self.__check_main_diagonal() \
             or self.__check_anti_diagonal()
     
-
-
+    
 class Player:
 
     def __init__(self, board):
@@ -134,8 +137,13 @@ def main():
             print("\n")
             player.show_board()
 
-            if player.check_end():
-                print("YOU LOSE...")
+            try:
+                if player.check_end():
+                    print("\n")
+                    print("YOU LOSE...")
+                    break
+            except StaleMateException as e:
+                print(e)
                 break
 
             print("\nPlace your piece: ")
@@ -149,10 +157,15 @@ def main():
                     print(e)
                     print("Try again: ")
 
-            if player.check_end():
-                print("\n")
+            try:
+                if player.check_end():
+                    print("\n")
+                    player.show_board()
+                    print("YOU WIN!")
+                    break
+            except StaleMateException as e:
                 player.show_board()
-                print("YOU WIN!")
+                print(e)
                 break
 
 
