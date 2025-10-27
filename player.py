@@ -40,10 +40,11 @@ class Board:
             return False
         
         piece = self.__board[0][self.__cols - 1]
+        j = self.__cols - 1
         for i in range(self.__rows):
-            for j in range(self.__cols - 1, 0, -1):
-                if self.__board[i][j] != piece:
-                    return False
+            if self.__board[i][j] != piece:
+                return False
+            j -= 1
         return True
 
             
