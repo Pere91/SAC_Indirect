@@ -14,10 +14,11 @@ class Board:
     def __str__(self):
         s = ""
         for row in range(self.__rows):
-            s += "\n-------------\n| "
+            hor_div = "\n-" + "----" * self.__cols + "\n"
+            s += hor_div + "| " # "\n-------------\n| "
             for col in range(self.__cols):
                 s += self.__board[row][col] + " | "
-        s += "\n-------------\n"
+        s += hor_div
         return s
     
     def __out(self, x, y):
