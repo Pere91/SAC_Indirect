@@ -9,10 +9,15 @@ class Player:
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__piece = None
         self.__is_first = None
+        self.__finished = False
 
     @property
     def is_first(self):
         return self.__is_first
+    
+    @property
+    def finished(self):
+        return self.__finished
     
     @property
     def piece(self):
@@ -29,6 +34,10 @@ class Player:
             self.__socket.send(json.dumps(pub).encode('utf-8'))
             resp = self.__socket.recv(1024).decode('utf-8')
             print(resp)
+
+            if "WIN" in resp or "LOSE" in resp:
+                self.__finished = True
+                break
             
             if "OCCUPIED" not in resp and "OUT OF BOARD" not in resp:
                 break
@@ -45,6 +54,8 @@ class Player:
     def wait(self):
         resp = self.__socket.recv(1024).decode('utf-8')
         print(resp)
+        if "WIN" in resp or "LOSE" in resp:
+            self.__finished = True
 
 
 def main():
@@ -65,10 +76,13 @@ def main():
 
     while True:
         player.wait()
+        if player.finished:
+            break
+
         box = input("Place your piece: ")
         player.publish(box)
-
-
+        if player.finished:
+            break
 
 if __name__ == "__main__":
     main()
