@@ -29,7 +29,14 @@ def main():
 
     while True:
         box = input("Place you piece: x,y")
-        player.publish(box)
+
+        while True:
+            try:
+                player.publish(box)
+                break
+            except IndexError as e:
+                print(e)
+                print("Try again, please:")
 
 if __name__ == "__main__":
     main()

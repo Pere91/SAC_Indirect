@@ -103,10 +103,13 @@ class Board():
 
                 if piece == pieces[turn]:
                     print(f"Received: {position}, type: {type(position)}")
-                    self.__place(position[0], position[1], piece)
-                    print(self)
-                    self.__topics[piece].send(str(position).encode('utf-8'))
-                    turn = (turn + 1) % len(pieces)
+                    try:
+                        self.__place(position[0], position[1], piece)
+                        print(self)
+                        self.__topics[piece].send(str(position).encode('utf-8'))
+                        turn = (turn + 1) % len(pieces)
+                    except IndexError as e:
+                        self.__topics[piece].send(str(e).encode('utf-8'))
                 else:
                     print("Wait for your turn")
                     self.__topics[piece].send("Wait for your turn".encode('utf-8'))
