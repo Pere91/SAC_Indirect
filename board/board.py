@@ -9,7 +9,7 @@ class Board():
         self.__rows = rows
         self.__cols = cols
         self.__board = [[' ' for i in range(0, self.__cols)] for i in range(0, self.__rows)]
-        self.__topics = {} # {'O': [], 'X': []}
+        self.__topics = {}
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     def __str__(self):
@@ -90,6 +90,9 @@ class Board():
             conns.append(conn)
             sub = conn.recv(1024).decode('utf-8')
             self.__topics[sub] = conn
+
+        pieces = [key for key in self.__topics.keys()]
+        turn = 0
         
         while True:
             pubs, _, _ = select.select(conns, [], [])
@@ -97,10 +100,16 @@ class Board():
             for pub in pubs:
                 data = json.loads(pub.recv(1024).decode('utf-8'))
                 piece, position = next(iter(data.items()))
-                print(f"Received: {position}, type: {type(position)}")
-                self.__place(position[0], position[1], piece)
-                print(self)
-                self.__topics[piece].send(str(position).encode('utf-8'))
+
+                if piece == pieces[turn]:
+                    print(f"Received: {position}, type: {type(position)}")
+                    self.__place(position[0], position[1], piece)
+                    print(self)
+                    self.__topics[piece].send(str(position).encode('utf-8'))
+                    turn = (turn + 1) % len(pieces)
+                else:
+                    print("Wait for your turn")
+                    self.__topics[piece].send("Wait for your turn".encode('utf-8'))
 
 
 def main():
