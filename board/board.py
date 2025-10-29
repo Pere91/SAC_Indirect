@@ -70,7 +70,7 @@ class Board():
             raise IndexError(f"[BOARD]: Position [{x},{y}]: OCCUPIED")
         self.__board[x][y] = piece
 
-    def check_end(self):
+    def __end_condition(self):
         if all(not self.__empty(i, j) for i in range(0, self.__rows) for j in range(self.__cols)):
             raise StaleMateException("[BOARD]: STALEMATE: END OF GAME")
 
@@ -89,29 +89,35 @@ class Board():
             print(f"Connected to {addr}")
             conns.append(conn)
             sub = conn.recv(1024).decode('utf-8')
+            conn.send(f"[BOARD]: Subscribed to piece {sub},{i}".encode('utf-8'))
             self.__topics[sub] = conn
 
         pieces = [key for key in self.__topics.keys()]
         turn = 0
         
         while True:
-            pubs, _, _ = select.select(conns, [], [])
+            data = json.loads(conns[turn].recv(1024).decode('utf-8'))
+            piece, position = next(iter(data.items()))
 
-            for pub in pubs:
-                data = json.loads(pub.recv(1024).decode('utf-8'))
-                piece, position = next(iter(data.items()))
+            try:
+                self.__place(position[0], position[1], piece)
+                print(self)
 
-                if piece == pieces[turn]:
-                    try:
-                        self.__place(position[0], position[1], piece)
-                        print(self)
-                        pub.send(f"[BOARD]: Piece placed at {position}".encode('utf-8'))
-                        self.__topics[piece].send(str(position).encode('utf-8'))
-                        turn = (turn + 1) % len(pieces)
-                    except IndexError as e:
-                        self.__topics[piece].send(str(e).encode('utf-8'))
-                else:
-                    self.__topics[piece].send("[BOARD]: Wait for your turn".encode('utf-8'))
+                if self.__end_condition():
+                    conns[turn].send(f"[BOARD]: YOU WIN!".encode('utf-8'))
+                    self.__topics[piece].send(f"[BOARD]: YOU LOSE...".encode('utf-8'))
+                    return
+
+                conns[turn].send(f"[BOARD]: Piece placed at {position}".encode('utf-8'))
+                self.__topics[piece].send(str(position).encode('utf-8'))
+                turn = (turn + 1) % len(pieces)
+
+            except IndexError as e:
+                conns[turn].send(str(e).encode('utf-8'))
+            except StaleMateException as sm:
+                conns[turn].send(str(sm).encode('utf-8'))
+                self.__topics[piece].send(str(sm).encode('utf-8')) # sendall?
+                return
 
 
 def main():
