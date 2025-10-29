@@ -109,7 +109,7 @@ class Board():
                     return
 
                 conns[turn].send(f"[BOARD]: Piece placed at {position}".encode('utf-8'))
-                self.__topics[piece].send(str(position).encode('utf-8'))
+                self.__topics[piece].send(f"[BOARD]: Adversary move: {position}".encode('utf-8'))
                 turn = (turn + 1) % len(pieces)
 
             except IndexError as e:

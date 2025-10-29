@@ -35,7 +35,7 @@ class Player:
             resp = self.__socket.recv(1024).decode('utf-8')
             print(resp)
 
-            if "WIN" in resp or "LOSE" in resp:
+            if "WIN" in resp or "LOSE" in resp or "STALEMATE" in resp:
                 self.__finished = True
                 break
             
@@ -52,9 +52,10 @@ class Player:
         self.__is_first = int(turn) == 0
 
     def wait(self):
+        print("Waiting for adversary to play...")
         resp = self.__socket.recv(1024).decode('utf-8')
         print(resp)
-        if "WIN" in resp or "LOSE" in resp:
+        if "WIN" in resp or "LOSE" in resp or "STALEMATE" in resp:
             self.__finished = True
 
 
