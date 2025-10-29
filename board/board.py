@@ -1,10 +1,16 @@
+import socket
+import select
+import os
+import json
 from exceptions import StaleMateException
 
-class Board:
+class Board():
     def __init__(self, rows, cols):
         self.__rows = rows
         self.__cols = cols
         self.__board = [[' ' for i in range(0, self.__cols)] for i in range(0, self.__rows)]
+        self.__topics = {} # {'O': [], 'X': []}
+        self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     def __str__(self):
         s = ""
@@ -59,7 +65,7 @@ class Board:
     def cols(self):
         return self.__cols
     
-    def place(self, x, y, piece):
+    def __place(self, x, y, piece):
         if not self.__empty(x, y):
             raise IndexError(f"Position [{x},{y}]: OCCUPIED")
         self.__board[x][y] = piece
@@ -70,3 +76,45 @@ class Board:
 
         return self.__check_horizontal_vertical() or self.__check_main_diagonal() \
             or self.__check_anti_diagonal()
+    
+    def serve(self):
+        self.__socket.bind((os.getenv("SERVER_NAME"), int(os.getenv("SERVER_PORT"))))
+        self.__socket.listen(2)
+
+        print("The server is running...")
+
+        conns = []
+        for i in range(2):
+            conn, addr = self.__socket.accept()
+            print(f"Connected to {addr}")
+            conns.append(conn)
+            sub = conn.recv(1024).decode('utf-8')
+            self.__topics[sub] = conn
+        
+        while True:
+            pubs, _, _ = select.select(conns, [], [])
+
+            for pub in pubs:
+                data = json.loads(pub.recv(1024).decode('utf-8'))
+                piece, position = next(iter(data.items()))
+                print(f"Received: {position}, type: {type(position)}")
+                self.__place(position[0], position[1], piece)
+                print(self)
+                self.__topics[piece].send(str(position).encode('utf-8'))
+
+
+def main():
+    board = Board(3, 3)
+    board.serve()
+
+if __name__ == "__main__":
+    main()
+
+
+
+        
+        
+
+        
+
+

@@ -1,6 +1,6 @@
-from board import Board
-from player import Player
-from exceptions import StaleMateException
+from board.board import Board
+from player.player import Player
+from board.exceptions import StaleMateException
 
 def main():
     player = Player(Board(3, 3))
