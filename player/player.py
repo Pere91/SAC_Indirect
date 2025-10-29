@@ -15,6 +15,8 @@ class Player:
         x, y = box.split(',')
         pub = {self.__piece: [int(x), int(y)]}
         self.__socket.send(json.dumps(pub).encode('utf-8'))
+        resp = self.__socket.recv(1024).decode('utf-8')
+        print(resp)
 
     def subscribe(self, piece):
         self.__piece = piece
@@ -24,19 +26,13 @@ class Player:
 
 def main():
     player = Player()
-    piece = input("Choose your piece: ['O' / 'X']")
+    piece = input("Choose your piece: ['O' / 'X'] ")
     player.subscribe(piece)
 
     while True:
-        box = input("Place you piece: x,y")
+        box = input("Place you piece: ")
+        player.publish(box)
 
-        while True:
-            try:
-                player.publish(box)
-                break
-            except IndexError as e:
-                print(e)
-                print("Try again, please:")
 
 if __name__ == "__main__":
     main()

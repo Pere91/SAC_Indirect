@@ -27,7 +27,7 @@ class Board():
     
     def __empty(self, x, y):
         if self.__out(x, y):
-            raise IndexError(f"Position [{x},{y}]: OUT OF BOARD")
+            raise IndexError(f"[BOARD]: Position [{x},{y}]: OUT OF BOARD")
         return self.__board[x][y] == ' '
     
     def __check_horizontal_vertical(self):
@@ -67,12 +67,12 @@ class Board():
     
     def __place(self, x, y, piece):
         if not self.__empty(x, y):
-            raise IndexError(f"Position [{x},{y}]: OCCUPIED")
+            raise IndexError(f"[BOARD]: Position [{x},{y}]: OCCUPIED")
         self.__board[x][y] = piece
 
     def check_end(self):
         if all(not self.__empty(i, j) for i in range(0, self.__rows) for j in range(self.__cols)):
-            raise StaleMateException("STALEMATE: END OF GAME")
+            raise StaleMateException("[BOARD]: STALEMATE: END OF GAME")
 
         return self.__check_horizontal_vertical() or self.__check_main_diagonal() \
             or self.__check_anti_diagonal()
@@ -102,17 +102,16 @@ class Board():
                 piece, position = next(iter(data.items()))
 
                 if piece == pieces[turn]:
-                    print(f"Received: {position}, type: {type(position)}")
                     try:
                         self.__place(position[0], position[1], piece)
                         print(self)
+                        pub.send(f"[BOARD]: Piece placed at {position}".encode('utf-8'))
                         self.__topics[piece].send(str(position).encode('utf-8'))
                         turn = (turn + 1) % len(pieces)
                     except IndexError as e:
                         self.__topics[piece].send(str(e).encode('utf-8'))
                 else:
-                    print("Wait for your turn")
-                    self.__topics[piece].send("Wait for your turn".encode('utf-8'))
+                    self.__topics[piece].send("[BOARD]: Wait for your turn".encode('utf-8'))
 
 
 def main():
