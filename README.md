@@ -130,11 +130,18 @@ to the server, i.e. the board, and the subscription to topics:
 ### Program flow
 The game flow takes place in the main() function of the player.py program. It
 goes through the following steps:
+1. The player chooses a piece between 'O' and 'X'. If it tries to pick another
+   symbol it is prompted again until one of those is chosen.
+2. The player subscribes to the other available piece, which is the adversary
+   piece.
+3. If the player is the first to connect to the server, it makes the first move
+   by publishing its piece; otherwise, it skips this step.
+4. Game loop:
+    - The server waits for its turn. The wait() method awaits for the server
+      information about the adversary's move and checks end game condition,
+      upon which ends the game.
+    - Afterwards, the player publishes its piece.
 
-
-
-
-## Final considerations
 
 ## Bonus: *Brokerless* version
 An early version of the game have been preserved on a separate branch since it
