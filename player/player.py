@@ -117,6 +117,8 @@ class Player:
             # Check if end game condition is achieved
             if "WIN" in resp or "LOSE" in resp or "STALEMATE" in resp:
                 self.__finished = True
+                clog.debug("[DEBUG]: Game end condition achieved")
+                flog.debug("[DEBUG]: Game end condition achieved")
                 break
             
             # Check if box is available

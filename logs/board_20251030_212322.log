@@ -1,0 +1,20 @@
+21:23:22.590 | INFO : Server start
+21:23:30.464 | INFO : Connected to ('172.18.0.3', 34546)
+21:23:30.465 | INFO : [('172.18.0.3', 34546)]: Subscribe request to topic X
+21:23:30.465 | DEBUG : [DEBUG]: Added topic X
+21:23:30.466 | INFO : Subscribed ('172.18.0.3', 34546) to topic X
+21:23:46.994 | INFO : Connected to ('172.18.0.4', 44524)
+21:23:46.995 | INFO : [('172.18.0.4', 44524)]: Subscribe request to topic O
+21:23:46.996 | DEBUG : [DEBUG]: Added topic O
+21:23:46.997 | INFO : Subscribed ('172.18.0.4', 44524) to topic O
+21:23:54.731 | DEBUG : [DEBUG]: Piece X placed at [1, 1]
+21:23:54.739 | DEBUG : [DEBUG]: Next turn: O
+21:23:54.740 | DEBUG : [DEBUG]: [BOARD]: Position [1,1]: OCCUPIED
+21:24:09.313 | DEBUG : [DEBUG]: Piece O placed at [1, 0]
+21:24:09.313 | DEBUG : [DEBUG]: Next turn: X
+21:24:09.315 | DEBUG : [DEBUG]: Piece X placed at [2, 2]
+21:24:09.315 | DEBUG : [DEBUG]: Next turn: O
+21:24:35.696 | DEBUG : [DEBUG]: Piece O placed at [0, 2]
+21:24:35.697 | DEBUG : [DEBUG]: Next turn: X
+21:24:40.647 | DEBUG : [DEBUG]: Winner: X
+21:24:40.648 | INFO : Server shut down

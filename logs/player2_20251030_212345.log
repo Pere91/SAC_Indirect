@@ -1,0 +1,15 @@
+21:23:46.983 | DEBUG : [DEBUG]: Piece input: X
+21:23:46.984 | INFO : Chose piece: X
+21:23:46.994 | DEBUG : Attempt to subscribe to topic O
+21:23:46.996 | INFO : [BOARD]: Subscribed to piece O
+21:23:46.997 | DEBUG : [DEBUG]: Request sent for subscribe to topic: O
+21:23:54.731 | INFO : [BOARD]: Adversary move: [1, 1]
+21:23:54.732 | DEBUG : Attempt to place piece at ['1', '1']
+21:23:54.740 | INFO : [BOARD]: Position [1,1]: OCCUPIED
+21:24:09.312 | DEBUG : Attempt to place piece at ['1', '0']
+21:24:09.313 | INFO : [BOARD]: Piece placed at [1, 0]
+21:24:09.315 | INFO : [BOARD]: Adversary move: [2, 2]
+21:24:35.696 | DEBUG : Attempt to place piece at ['0', '2']
+21:24:35.698 | INFO : [BOARD]: Piece placed at [0, 2]
+21:24:40.647 | INFO : [BOARD]: YOU LOSE...
+21:24:40.648 | DEBUG : [DEBUG]: Game end condition achieved
