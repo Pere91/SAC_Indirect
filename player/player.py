@@ -7,8 +7,8 @@ from datetime import datetime
 PIECES = ['O', 'X']
 LOG_FILE_PATH = f"/tmp/{os.getenv("PLAYER_NAME")}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log" 
 
-flog = logger_config.get_file_logger(LOG_FILE_PATH)
-clog = logger_config.get_console_logger()
+flog = logger_config.get_file_logger(LOG_FILE_PATH, logger_config.logging.DEBUG)
+clog = logger_config.get_console_logger(logger_config.logging.DEBUG)
 
 class Player:
     """
@@ -106,6 +106,8 @@ class Player:
             x, y = box.split(',')
             pub = {self.__piece: [int(x), int(y)]}
             self.__socket.send(json.dumps(pub).encode('utf-8'))
+            clog.debug(f"Attempt to place piece at {[x, y]}")
+            flog.debug(f"Attempt to place piece at {[x, y]}")
 
             # Await server response
             resp = self.__socket.recv(1024).decode('utf-8')
@@ -139,6 +141,8 @@ class Player:
 
         # Send the piece to be subscribed to
         self.__socket.send(piece.encode('utf-8'))
+        clog.debug(f"Attempt to subscribe to topic {piece}")
+        flog.debug(f"Attempt to subscribe to topic {piece}")
 
         # Await server response
         resp = self.__socket.recv(1024).decode('utf-8')
@@ -158,7 +162,7 @@ class Player:
 
         # Await server notification with the update caused by the adversary
         # move.
-        print("Waiting for adversary to play...")
+        clog.info("Waiting for adversary to play...")
         resp = self.__socket.recv(1024).decode('utf-8')
         clog.info(resp)
         flog.info(resp)

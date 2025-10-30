@@ -1,7 +1,7 @@
 import logging
 
 
-def get_file_logger(file_path: str):
+def get_file_logger(file_path: str, level=logging.INFO):
     """
     Creates and returns a logger that logs messages to a specified file.
 
@@ -24,14 +24,14 @@ def get_file_logger(file_path: str):
 
     # Logger configuration, with INFO level logging
     logger = logging.getLogger("file")
-    logger.setLevel(logging.INFO)
+    logger.setLevel(level)
     logger.addHandler(handler)
     logger.propagate = False  # Avoids crossing logs with other loggers
 
     return logger
 
 
-def get_console_logger():
+def get_console_logger(level=logging.INFO):
     """
     Creates and returns a logger that logs messages to the console (stdout).
 
@@ -48,7 +48,7 @@ def get_console_logger():
 
     # Logger configuration, with INFO level logging
     logger = logging.getLogger("console")
-    logger.setLevel(logging.INFO)
+    logger.setLevel(level)
     logger.addHandler(handler)
     logger.propagate = False
 
