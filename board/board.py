@@ -27,9 +27,8 @@ class Board():
         socket (socket.socket): Socket for communication with the players.
     """
 
-
     def __init__(self, rows, cols):
-        """Initialize the board with its dimension, with all boxes empty and
+        """Initialize the Board with its dimension, with all boxes empty and
         create the socket.
 
         Args:
