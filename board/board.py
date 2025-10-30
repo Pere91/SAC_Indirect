@@ -253,8 +253,6 @@ class Board():
                 clog.debug(f"[DEBUG]: Piece {pieces[turn]} placed at {position}")
                 flog.debug(f"[DEBUG]: Piece {pieces[turn]} placed at {position}")
                 turn = (turn + 1) % len(pieces)
-                clog.debug(f"[DEBUG]: Next turn: {pieces[turn]}")
-                flog.debug(f"[DEBUG]: Next turn: {pieces[turn]}")
 
             except IndexError as e:
                 conns[turn].send(str(e).encode('utf-8'))
