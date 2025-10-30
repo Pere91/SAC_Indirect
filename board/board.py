@@ -1,10 +1,18 @@
 import socket
 import os
 import json
+import logger_config
 from exceptions import StaleMateException
+from datetime import datetime
+
+LOG_FILE_PATH = f"/tmp/{os.getenv("SERVER_NAME")}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log"
+
+flog = logger_config.get_file_logger(LOG_FILE_PATH)
+clog = logger_config.get_console_logger()
 
 class Board():
-    """Represents the board of the TicTacToe game. Acts as a broker server for
+    """
+    Represents the board of the TicTacToe game. Acts as a broker server for
     the players after a publisher-subscriber fashion.
 
     Parameters:
@@ -28,7 +36,8 @@ class Board():
     """
 
     def __init__(self, rows, cols):
-        """Initialize the Board with its dimension, with all boxes empty and
+        """
+        Initialize the Board with its dimension, with all boxes empty and
         create the socket.
 
         Args:
@@ -43,7 +52,8 @@ class Board():
 
     
     def __str__(self):
-        """String representation of the board.
+        """
+        String representation of the board.
 
         Returns:
             str: Basic but useful graphic interface for the terminal.
@@ -59,7 +69,8 @@ class Board():
     
     
     def __out(self, x, y):
-        """Check if a position is outside of the board.
+        """
+        Check if a position is outside of the board.
 
         Args:
             x (int): Horizontal coordinate.
@@ -72,7 +83,8 @@ class Board():
     
     
     def __empty(self, x, y):
-        """Check whether a box is empty or not.
+        """
+        Check whether a box is empty or not.
 
         Args:
             x (int): Horizontal coordinate.
@@ -90,7 +102,8 @@ class Board():
     
     
     def __check_horizontal_vertical(self):
-        """Check victory condition based on row or column completion,
+        """
+        Check victory condition based on row or column completion,
         but no diagonal.
 
         Returns:
@@ -110,7 +123,8 @@ class Board():
     
     
     def __check_main_diagonal(self):
-        """Check victory condition based on main diagonal completion.
+        """
+        Check victory condition based on main diagonal completion.
 
         Returns:
             bool: True if the main diagonal is completely filled with the same
@@ -120,7 +134,8 @@ class Board():
     
     
     def __check_anti_diagonal(self):
-        """Check victory condition based on anti diagonal completion.
+        """
+        Check victory condition based on anti diagonal completion.
 
         Returns:
             bool: True if the anti diagonal is completely filled with the same
@@ -142,7 +157,8 @@ class Board():
     
     
     def __place(self, x, y, piece):
-        """Place a piece in a certain box on the board.
+        """
+        Place a piece in a certain box on the board.
 
         Args:
             x (int): Horizontal coordinate.
@@ -158,7 +174,8 @@ class Board():
 
 
     def __end_condition(self):
-        """Check all victory or stalemate conditions to determine whether the
+        """
+        Check all victory or stalemate conditions to determine whether the
         game has ended.
 
         Raises:
@@ -176,13 +193,15 @@ class Board():
     
     
     def serve(self):
-        """Act as a broker for the players while the game is on course. Manage
+        """
+        Act as a broker for the players while the game is on course. Manage
         the flow of the game by handling connection and message exchange.
         """
         # Initialize socket
         self.__socket.bind((os.getenv("SERVER_NAME"), int(os.getenv("SERVER_PORT"))))
         self.__socket.listen(2)
-        print("The server is running...")
+        clog.info("The server is running...")
+        flog.info("Server start")
 
         # Wait for both players to be connected. Store socket connections
         # and initialize token subscriptions and give the players starting
@@ -190,11 +209,21 @@ class Board():
         conns = []
         for i in range(2):
             conn, addr = self.__socket.accept()
-            print(f"Connected to {addr}")
+            clog.info(f"Connected to {addr}")
+            flog.info(f"Connected to {addr}")
+
             conns.append(conn)
             sub = conn.recv(1024).decode('utf-8')
+            clog.info(f"[{addr}]: Subscribe request to topic {sub}")
+            flog.info(f"[{addr}]: Subscribe request to topic {sub}")
+
             conn.send(f"[BOARD]: Subscribed to piece {sub},{i}".encode('utf-8'))
             self.__topics[sub] = conn
+            clog.debug(f"[DEBUG]: Added topic {sub}")
+            flog.debug(f"[DEBUG]: Added topic {sub}")
+            clog.info(f"Subscribed {addr} to topic {sub}")
+            flog.info(f"Subscribed {addr} to topic {sub}")
+
 
         pieces = [key for key in self.__topics.keys()]
         turn = 0
@@ -214,26 +243,40 @@ class Board():
                 if self.__end_condition():
                     conns[turn].send(f"[BOARD]: YOU WIN!".encode('utf-8'))
                     self.__topics[piece].send(f"[BOARD]: YOU LOSE...".encode('utf-8'))
+                    clog.debug(f"[DEBUG]: Winner: {pieces[turn]}")
+                    flog.debug(f"[DEBUG]: Winner: {pieces[turn]}")
                     return
 
                 # If successful, inform both players of the changes and update turn
                 conns[turn].send(f"[BOARD]: Piece placed at {position}".encode('utf-8'))
                 self.__topics[piece].send(f"[BOARD]: Adversary move: {position}".encode('utf-8'))
+                clog.debug(f"[DEBUG]: Piece {pieces[turn]} placed at {position}")
+                flog.debug(f"[DEBUG]: Piece {pieces[turn]} placed at {position}")
                 turn = (turn + 1) % len(pieces)
+                clog.debug(f"[DEBUG]: Next turn: {pieces[turn]}")
+                flog.debug(f"[DEBUG]: Next turn: {pieces[turn]}")
 
             except IndexError as e:
                 conns[turn].send(str(e).encode('utf-8'))
+                clog.debug(f"[DEBUG]: {e}")
+                flog.debug(f"[DEBUG]: {e}")
             except StaleMateException as sm:
                 conns[turn].send(str(sm).encode('utf-8'))
                 self.__topics[piece].send(str(sm).encode('utf-8'))
+                clog.debug(f"[DEBUG]: {sm}")
+                flog.debug(f"[DEBUG]: {sm}")
                 return
 
 
 def main():
-    """Main program. Simply create the board server and launch it.
     """
+    Main program. Simply create the board server and launch it.
+    """
+
     board = Board(3, 3)
     board.serve()
+    clog.info("END OF THE GAME")
+    flog.info("Server shut down")
 
 if __name__ == "__main__":
     main()

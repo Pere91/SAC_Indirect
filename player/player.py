@@ -1,15 +1,23 @@
 import socket
 import os
 import json
+import logger_config
+from datetime import datetime
 
 PIECES = ['O', 'X']
+LOG_FILE_PATH = f"/tmp/{os.getenv("PLAYER_NAME")}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log" 
+
+flog = logger_config.get_file_logger(LOG_FILE_PATH)
+clog = logger_config.get_console_logger()
 
 class Player:
-    """Represents a player of the TicTacToe game. Acts as a client that
+    """
+    Represents a player of the TicTacToe game. Acts as a client that
     publishes to the topic labeled with the piece it uses and is subscribed to
     the piece used by its adversary.
 
     Attributes:
+        name (str): Name of the player from the environment variables.
         socket (socket.socket): Socket for communication with the board server.
         piece (char): Piece used by the player.
         is_first (bool): Whether the player if first to play or not.
@@ -17,8 +25,10 @@ class Player:
     """
 
     def __init__(self):
-        """Initialize the Player.
         """
+        Initialize the Player.
+        """
+        self.__name = os.getenv("PLAYER_NAME")
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__piece = None
         self.__is_first = None
@@ -26,8 +36,20 @@ class Player:
 
 
     @property
+    def name(self):
+        """
+        Getter for name attribute.
+
+        Returns:
+            str: Name of the player.
+        """
+        return self.__name
+    
+
+    @property
     def is_first(self):
-        """Getter for is_first attribute.
+        """
+        Getter for is_first attribute.
 
         Returns:
             bool: True if player is first to play; False otherwise.
@@ -37,7 +59,8 @@ class Player:
     
     @property
     def finished(self):
-        """Getter for finished attribute.
+        """
+        Getter for finished attribute.
 
         Returns:
             bool: True if player has finished the game; False otherwise.
@@ -47,7 +70,8 @@ class Player:
     
     @property
     def piece(self):
-        """Getter for piece attribute.
+        """
+        Getter for piece attribute.
 
         Returns:
             char: Piece used by the player.
@@ -66,7 +90,8 @@ class Player:
 
 
     def publish(self, box):
-        """Publish a message to the topic labeled with the player's piece.
+        """
+        Publish a message to the topic labeled with the player's piece.
         Message contains a dictionary with the player's piece as key and
         a list with the box coordinates as value: {'piece': [x, y]}.
 
@@ -84,7 +109,8 @@ class Player:
 
             # Await server response
             resp = self.__socket.recv(1024).decode('utf-8')
-            print(resp)
+            clog.info(resp)
+            flog.info(resp)
 
             # Check if end game condition is achieved
             if "WIN" in resp or "LOSE" in resp or "STALEMATE" in resp:
@@ -100,7 +126,8 @@ class Player:
 
 
     def subscribe(self, piece):
-        """Subscribe to the topic labeled with a given piece (ideally the
+        """
+        Subscribe to the topic labeled with a given piece (ideally the
         adversary's piece). Used to establish connection with the server.
 
         Args:
@@ -118,12 +145,14 @@ class Player:
 
         # Parse server response to get the starting turn
         msg, turn = resp.split(',')
-        print(msg)
+        clog.info(msg)
+        flog.info(msg)
         self.__is_first = int(turn) == 0
 
 
     def wait(self):
-        """Wait for the other player to make its move. Thus, the player is
+        """
+        Wait for the other player to make its move. Thus, the player is
         blocked while it's not its turn.
         """
 
@@ -131,31 +160,44 @@ class Player:
         # move.
         print("Waiting for adversary to play...")
         resp = self.__socket.recv(1024).decode('utf-8')
-        print(resp)
+        clog.info(resp)
+        flog.info(resp)
 
         # Check jf end game condition is achieved
         if "WIN" in resp or "LOSE" in resp or "STALEMATE" in resp:
             self.__finished = True
+            clog.debug("[DEBUG]: Game end condition achieved")
+            flog.debug("[DEBUG]: Game end condition achieved")
 
 
 def main():
-    """Main program. Create the player and guide it through the game's stages
+    """
+    Main program. Create the player and guide it through the game's stages
     by prompting it.
     """
 
     # Ask player to choose a piece
     player = Player()
     piece = input("Choose your piece: ['O' / 'X'] ")
+    clog.debug(f"[DEBUG]: Piece input: {piece}")
+    flog.debug(f"[DEBUG]: Piece input: {piece}")
 
     # If the piece selected is incorrect, keep asking
     while piece not in PIECES:
-        print("Piece must be either 'O' or 'X'")
+        clog.info("Piece must be either 'O' or 'X'")
         piece = input()
+        clog.debug(f"[DEBUG]: Piece input: {piece}")
+        flog.debug(f"[DEBUG]: Piece input: {piece}")
+
+    clog.info(f"Chose piece: {piece}")
+    flog.info(f"Chose piece: {piece}")
 
     # Based on the piece selected, subscribe to adversary's piece
     player.piece = piece
     ad_piece = [p for p in PIECES if p != piece][0]
     player.subscribe(ad_piece)
+    clog.debug(f"[DEBUG]: Request sent for subscribe to topic: {ad_piece}")
+    flog.debug(f"[DEBUG]: Request sent for subscribe to topic: {ad_piece}")
 
     # The first player to connect to the server makes the first move
     if player.is_first:
