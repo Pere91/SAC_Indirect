@@ -7,8 +7,8 @@ from datetime import datetime
 
 LOG_FILE_PATH = f"/tmp/{os.getenv("SERVER_NAME")}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log"
 
-flog = logger_config.get_file_logger(LOG_FILE_PATH, logger_config.logging.DEBUG)
-clog = logger_config.get_console_logger(logger_config.logging.DEBUG)
+flog = logger_config.get_file_logger(LOG_FILE_PATH, logger_config.logging.INFO)
+clog = logger_config.get_console_logger(logger_config.logging.INFO)
 
 class Board():
     """
@@ -243,8 +243,8 @@ class Board():
                 if self.__end_condition():
                     conns[turn].send(f"[BOARD]: YOU WIN!".encode('utf-8'))
                     self.__topics[piece].send(f"[BOARD]: YOU LOSE...".encode('utf-8'))
-                    clog.debug(f"[DEBUG]: Winner: {pieces[turn]}")
-                    flog.debug(f"[DEBUG]: Winner: {pieces[turn]}")
+                    clog.debug(f"[DEBUG]: Winner: {pieces[(turn + 1) % len(pieces)]}")
+                    flog.debug(f"[DEBUG]: Winner: {pieces[(turn + 1) % len(pieces)]}")
                     return
 
                 # If successful, inform both players of the changes and update turn

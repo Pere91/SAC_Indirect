@@ -7,8 +7,8 @@ from datetime import datetime
 PIECES = ['O', 'X']
 LOG_FILE_PATH = f"/tmp/{os.getenv("PLAYER_NAME")}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log" 
 
-flog = logger_config.get_file_logger(LOG_FILE_PATH, logger_config.logging.DEBUG)
-clog = logger_config.get_console_logger(logger_config.logging.DEBUG)
+flog = logger_config.get_file_logger(LOG_FILE_PATH, logger_config.logging.INFO)
+clog = logger_config.get_console_logger(logger_config.logging.INFO)
 
 class Player:
     """
